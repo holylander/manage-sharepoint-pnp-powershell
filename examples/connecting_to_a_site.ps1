@@ -10,8 +10,3 @@ $sourceSite="";  ## feel free to to prefill this var with the target URL if need
 $site1Connection = connectToSite -srcSite $sourceSite -stored_credential spPremises;
 
 Write-Host $("`n----MSG: script Ended: `n");
-
-
-if (!$(Get-InstalledModule -Name SharePointPnPPowerShell2013)){
-        Install-Module SharePointPnPPowerShell2013 -Scope CurrentUser;
-    }

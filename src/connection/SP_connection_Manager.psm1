@@ -30,11 +30,12 @@ function connectToSite() {
             $connectSourceSiteContext = Get-PnPConnection;
     
             if ($connectSourceSite -and $connectSourceSiteContext ) {
-                Write-Host $("----`nConnection established with {0}" -f $srcSite);
+                Write-Host $("OK: Connection established with '{0}'" -f $srcSite);
                 return @{   "siteContext" = $connectSourceSiteContext;
                     "siteWeb"             = $connectSourceSite;
                     "siteTitle"           = $connectSourceSite.Title;
                     "siteTitleFormated"   = $connectSourceSite.Title.Replace(" ", "_")
+                    # TODO: better title formatting
                 }
             }                   
         }
