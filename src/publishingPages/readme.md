@@ -1,0 +1,3 @@
+# LIBRARY DETAILS
+
+A collection of functions for dealing with publishing pages in Sharepoint. To be documented...
