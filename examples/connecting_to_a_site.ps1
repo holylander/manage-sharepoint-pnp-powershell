@@ -1,11 +1,17 @@
 
-#import certain modules
-. ($PSScriptRoot + "\..\src\pnp-powershell\SP_connection_Manager.ps1");
+Import-Module -Force $PSScriptRoot\..\src\resources\SP_tools.psm1;
+Import-Module -Force $PSScriptRoot\..\src\connection\SP_connection_Manager.psm1;
 
 
-#Write-Host $("`nMSG: script Started: `n----");
+Write-Host $("`nMSG: script Started----`n");
 
-$sourceSite=$false;  ## feel free to to prefill this var with the target URL if needed.
+checkModules;
+$sourceSite="";  ## feel free to to prefill this var with the target URL if needed.
 $site1Connection = connectToSite -srcSite $sourceSite -stored_credential spPremises;
 
-#Write-Host $("----`nMSG: script Ended: `n");
+Write-Host $("`n----MSG: script Ended: `n");
+
+
+if (!$(Get-InstalledModule -Name SharePointPnPPowerShell2013)){
+        Install-Module SharePointPnPPowerShell2013 -Scope CurrentUser;
+    }

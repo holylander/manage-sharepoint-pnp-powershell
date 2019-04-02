@@ -1,5 +1,12 @@
-function connectToSite($srcSite, $credential, $stored_credential) {
 
+
+function connectToSite() {
+    param( 
+        [System.Management.Automation.PSCredential] $credential,
+        [string]$srcSite,
+        [string]$stored_credential
+          )
+    ## setup connection vars
     if (!$srcSite) {
         $srcSite = Read-Host -Prompt 'Please type the sharepoint target site URL';
     }
@@ -7,13 +14,16 @@ function connectToSite($srcSite, $credential, $stored_credential) {
     if ($stored_credential) {
         $credential = $(Get-StoredCredential -Target $stored_credential);
     }
+
     if (!$credential) {
         Write-Host "Credentials were not provided. Prompting now..."
         $credential = Get-Credential;      
     }
+    
+    ## setup connection...
     try {
         Write-Host "Credentials ready.Trying to connect...."; #connect to Source Site
-        $connectionSrc = Connect-PnPOnline -Url $srcSite -Credentials $credential;
+        Connect-PnPOnline -Url $srcSite -Credentials $credential; #$connectionSrc = 
         $connectSourceSite = Get-PnPWeb;
         if ($connectSourceSite ) {
             $connectSourceSite = Get-PnPWeb;
@@ -36,3 +46,5 @@ function connectToSite($srcSite, $credential, $stored_credential) {
         Write-Host @("There has been an error trying to connect to '{1}'.`nError details: {0}" -f ($_.Exception.Message), $srcSite);
     }    
 }
+
+Export-ModuleMember connectToSite;
