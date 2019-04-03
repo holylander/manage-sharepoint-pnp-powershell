@@ -31,7 +31,8 @@ function connectToSite() {
     
             if ($connectSourceSite -and $connectSourceSiteContext ) {
                 Write-Host $("OK: Connection established with '{0}'" -f $srcSite);
-                return @{   "siteContext" = $connectSourceSiteContext;
+                return @{   
+                    "siteContext" = $connectSourceSiteContext;
                     "siteWeb"             = $connectSourceSite;
                     "siteTitle"           = $connectSourceSite.Title;
                     "siteTitleFormated"   = $connectSourceSite.Title.Replace(" ", "_")
