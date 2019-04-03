@@ -4,10 +4,10 @@ Import-Module -Force $PSScriptRoot\..\src\lists\SP_listItems.psm1;
 
 Write-Host $("`nMSG: script Started----`n");
 
-#checkModules;
+checkModules;
 $source_site=""  ## feel free to to prefill this var with the target URL if needed.
-
 $site1_connection = connectToSite -srcSite $source_site -stored_credential spPremises;
+
 ##For copying publishing pages, you need to provide at least ID and FileLeafRef
 $fields="ID","Title","FileLeafRef","PublishingPageImage","PublishingPageContent","ArticleStartDate","PublishingPageLayout"#,"scope"
 $list_name="Pages"  # feel free to to prefill this var with the target list name if needed.

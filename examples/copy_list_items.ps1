@@ -5,10 +5,8 @@ Import-Module -Force $PSScriptRoot\..\src\lists\SP_listItems.psm1;
 
 Write-Host $("`nMSG: script Started----`n");
 
-#checkModules;
+checkModules;
 $source_site="";  ## feel free to to prefill this var with the target URL if needed.
-
-
 $site1_connection = connectToSite -srcSite $source_site -stored_credential spPremises;
 
 $fields="ID","Title"
