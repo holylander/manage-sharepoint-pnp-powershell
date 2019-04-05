@@ -1,4 +1,4 @@
-# manage-sharepoint-powershell
+# manage-sharepoint-pnp-powershell
 
 Different Powershell cmdLets for managing Sharepoint Online / Premises.
 So far, most of the powershell script provide extended functionality so admin can work list data, publishing pages, config, in a better manner.
