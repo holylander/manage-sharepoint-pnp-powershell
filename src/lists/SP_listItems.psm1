@@ -1,3 +1,5 @@
+Import-Module -Force $PSScriptRoot\..\resources\SP_tools.psm1;
+
 function getListItems() {
     param( 
         [System.Collections.Hashtable] $site, ## need to provide the $site object returned by the SP_connection_manager
@@ -73,7 +75,7 @@ function copyListsItems( ) {
         # create the data structure that will be copied into the item        
         $item_collection.items | ForEach-Object {    
             $item = $_
-            $item_values=generateItemValues -fields $item_collection.fields -item $item            
+            $item_values = generateItemValues -fields $item_collection.fields -item $item            
     
             #try to save the item on target list
             $new_list_item = Add-PnPListItem -ErrorAction Inquire -Connection $site.siteContext -List $list_name -Values $item_values;           
@@ -109,7 +111,7 @@ function updateListsItem ( ) {
         [System.Collections.Hashtable] $changes, ## value to be updated, example: $changes= @{"MDDDisplayDesc" = "0"};    ( boolean must be given as strings)
         [System.Management.Automation.ScriptBlock]$handler ## used from transforming data before update        
     )
-    $updated_item=$null;
+    $updated_item = $null;
     try {
         Write-Host @("Trying to update item (ID: {0}) on list '{1}' " -f $item.Id, $list_name);   
         if ($handler) {
@@ -119,7 +121,7 @@ function updateListsItem ( ) {
         }
         if ($changes) {
             #some kind of static change, equal to every row.
-            $updated_item=Set-PnPListItem -List $list_name -Identity $item.Id -Values $changes -Connection $site.siteContext;
+            $updated_item = Set-PnPListItem -List $list_name -Identity $item.Id -Values $changes -Connection $site.siteContext;
             Write-Host @("OK: List Item '{0}' has been updated." -f $item.Id);        
         }               
     } 
@@ -129,13 +131,13 @@ function updateListsItem ( ) {
     return $updated_item
 }
 
-
 function copyPublishingItems( ) {
     param( 
         [System.Collections.Hashtable] $item_collection, ## need to provide a collection object returned by getListItems
         [System.Collections.Hashtable] $site, ## need to provide the $site object returned by the SP_connection_manager
         [System.Array]$fields, # if empty, use the fields provided in the item_collection
-        [string]$list_name        
+        [string]$list_name,
+        [array]$include_wp_columns ## enable copying the webparts on target columns that are going to be copied.
     )
     try {
         if ($item_collection.total -le 0 ) {
@@ -177,8 +179,15 @@ function copyPublishingItems( ) {
             #page was copied OK
             if ($created_page) {
                 Write-Output "OK: Publising Page has been created: ID ($($created_page.Id)), Title: $($created_page.FieldValues.Title)"
-                #$changes=@{"PublishingPageContent" = $item.FieldValues.PublishingPageContent;}
-                $changes=generateItemValues -Fields $fields -item $item
+                                                    
+                # if publishing pages should be copied with their webparts
+                if ($include_wp_columns){
+                    copyWebparts -src_url $($item.FieldValues.FileRef) -target_url $($created_page.FieldValues.FileRef)
+                    $item=setWebparts -src_url $($item.FieldValues.FileRef) -target_url $($created_page.FieldValues.FileRef) -item $item -wp_fields $include_wp_columns
+                }
+                #builds changes values arry in order to update newly create page with values from original page
+                $changes = generateItemValues -Fields $fields -item $item   # $changes example : $changes=@{"ID" = 23}            
+
                 $updated_page = updateListsItem -site $site -item $created_page -list_name $list_name -changes $changes
 
                 If ($updated_page) {
@@ -204,38 +213,5 @@ function copyPublishingItems( ) {
     } 
 }
 
-function generateItemValues (){
-    param(
-        [array]$fields,
-        $item
-    )
-    $fields | ForEach-Object {
-        $field_name = $_ 
-        # should not copy ID,it is unique
-        if ($field_name -notin 'ID', 'Id','FileLeafRef') {
-            ## in case there is any value to copy                
-            if ($item.FieldValues[$field_name] ) {
-                if ( $item.FieldValues[$field_name].getType().BaseType.Name -like "*Lookup*" ) {      
-                    if ($field_name -in "Author", "Editor" ) {                            
-                        $item_values += @{"$field_name" = [string]$item.FieldValues[$field_name].LookupValue };    
-                    }
-                    #this is another type of lookup column
-                    else {                        
-                        $itemValues += @{"$field_name" = [string]$itemIterator.FieldValues[$field_name].LookupId };    
-                    }                        
-                }
-                else {
-                    $item_values += @{"$_" = $item.FieldValues[$field_name] }
-                }                                   
-            }
-            ## otherwise, use some empty valye
-            else {
-                $item_values += @{"$field_name" = $null }; # ""
-            }
-        }                
-    }
-    return $item_values
-}
 
-    
 Export-ModuleMember -Function getListItems, copyListsItems, updateListsItem, copyPublishingItems;
