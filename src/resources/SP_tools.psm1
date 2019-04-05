@@ -60,8 +60,13 @@ function copyWebParts() {
 function setWebParts(){
      param (
             $src_url,
-            $target_url
+            $target_url,
+            $item,
+            $include_wp_columns
         )
+      $webparts_src= getWebParts -page_url $src_url
+      $webparts_target=getWebParts -page_url $target_url
+
 }
 
 function generateItemValues () {
