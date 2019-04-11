@@ -4,17 +4,17 @@ Import-Module -Force $PSScriptRoot\..\src\lists\SP_listItems.psm1;
 
 Write-Host $("`nMSG: script Started----`n");
 
-checkModules;
+#checkModules;  # if you want to check if you have all modules required
 $source_site=""  ## feel free to to prefill this var with the target URL if needed.
 $site1_connection = connectToSite -srcSite $source_site -stored_credential spPremises;
 
 ##For copying publishing pages, you need to provide at least ID and FileLeafRef
-$fields="ID","Title","FileLeafRef","PublishingPageImage","PublishingPageContent","ArticleStartDate","PublishingPageLayout"#,"scope"
+$fields="ID","Title","FileLeafRef","PublishingPageImage","PublishingPageContent","ArticleStartDate","PublishingPageLayout","scope"
 $list_name="Pages"  # feel free to to prefill this var with the target list name if needed.
-$filter= "" ##   # Filter example: {$_.FieldValues.ID -eq 5} 
+$filter= {$_.FieldValues.ID -eq 28}#"" ##   # Filter example: {$_.FieldValues.ID -eq 5} 
 
 $list_items= getListItems -site $site1_connection -fields $fields -list_name $list_name -filter $filter
-$copy_result= copyPublishingItems -site $site1_connection -item_Collection $list_items -list_name $list_name
+$copy_result= copyPublishingItems -site $site1_connection -item_Collection $list_items -list_name $list_name -include_weparts $true
 
 
 Write-Host $("`n----MSG: script Ended: `n");
