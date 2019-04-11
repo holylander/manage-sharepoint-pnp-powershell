@@ -135,9 +135,9 @@ function copyPublishingItems( ) {
     param( 
         [System.Collections.Hashtable] $item_collection, ## need to provide a collection object returned by getListItems
         [System.Collections.Hashtable] $site, ## need to provide the $site object returned by the SP_connection_manager
-        [System.Array]$fields, # if empty, use the fields provided in the item_collection
+        #[System.Array]$fields, # if empty, use the fields provided in the item_collection
         [string]$list_name,
-        [array]$include_wp_columns ## enable copying the webparts on target columns that are going to be copied.
+        [array]$include_weparts ## enable copying the webparts on target columns that are going to be copied.
     )
     try {
         if ($item_collection.total -le 0 ) {
@@ -147,9 +147,7 @@ function copyPublishingItems( ) {
         if ($fields -and ($($fields.count) -ne $($item_collection.fields.count) )) {
             throw 'FAIL: number of target and source fields differ.';
         }
-        else {
-            $fields = $item_collection.fields 
-        } 
+        else { $fields = $item_collection.fields } 
         
         if (!$list_name) { $list_name = $item_collection.list_name }
         
@@ -171,29 +169,29 @@ function copyPublishingItems( ) {
         $item_collection.items | ForEach-Object {    
             $item = $_
             $page_layout = $item.FieldValues.PublishingPageLayout.Url.Substring($item.FieldValues.PublishingPageLayout.Url.LastIndexOfAny("/") + 1).replace(".aspx", "");
-            $page_temp_name = $($item.FieldValues.FileLeafRef.Replace(".aspx", "") + "-" + $(Get-Random -Maximum 100))
+            $page_temp_name = $($item.FieldValues.FileLeafRef.Replace(".aspx", "") + "-" + $(Get-Random -Maximum 10000))
             
             Add-PnPPublishingPage -Connection $site.siteContext -PageName $page_temp_name -OutVariable $test -ErrorAction Inquire -Title $item.Title -PageTemplateName $page_layout 
             $created_page = Get-PnPListItem -Connection $site.siteContext  -List $list_name -Query ("<View><Query><Where><Eq><FieldRef Name='Title'/><Value Type='Text'>" + $page_temp_name + "</Value></Eq></Where></Query></View>");
   
             #page was copied OK
             if ($created_page) {
-                Write-Output "OK: Publising Page has been created: ID ($($created_page.Id)), Title: $($created_page.FieldValues.Title)"
+                Write-Host "OK: Publising Page has been created: ID ($($created_page.Id)), Title: $($created_page.FieldValues.Title)"
                                                     
                 # if publishing pages should be copied with their webparts
-                if ($include_wp_columns){
-                    copyWebparts -src_url $($item.FieldValues.FileRef) -target_url $($created_page.FieldValues.FileRef)
-                    $item=setWebparts -src_url $($item.FieldValues.FileRef) -target_url $($created_page.FieldValues.FileRef) -item $item -wp_fields $include_wp_columns
+                if ($include_weparts){
+                    $item= copyWebparts -src_item $item -target_url $($created_page.FieldValues.FileRef)
                 }
+
                 #builds changes values arry in order to update newly create page with values from original page
-                $changes = generateItemValues -Fields $fields -item $item   # $changes example : $changes=@{"ID" = 23}            
+                $changes = generateItemValues -fields $fields -item $item   # $changes example : $changes=@{"ID" = 23}            
 
                 $updated_page = updateListsItem -site $site -item $created_page -list_name $list_name -changes $changes
 
                 If ($updated_page) {
                     $items_copied_ok.items += @{"ok_id-$($item.Id)" = $item.FieldValues };
                     $items_copied_ok.total += 1;
-                    Write-Output "OK: Publising Page has been updated: ID ($($updated_page.Id)), Title: $($updated_page.FieldValues.Title)"
+                    Write-Host "OK: Publising Page has been copied: ID ($($updated_page.Id)), Title: $($updated_page.FieldValues.Title)"
                 }
                 else {
                     $items_copy_fail.items += @{"error_id-$($item.Id)" = $item.FieldValues };

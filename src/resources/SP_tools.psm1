@@ -31,43 +31,58 @@ function getWebParts () {
 
 function copyWebParts() {
     param (
-        $src_url,
-        $target_url
+        $target_url,
+        $src_item
     )
+    Write-Host "Trying to copy webparts over..."
+    $src_url=$($src_item.FieldValues.FileRef)
     $webparts_id=@()
-    $webparts_src=getWebParts -page_url $src_url
+    $webparts_src=getWebParts -page_url  $src_url
     $webparts_on_target_url = getWebParts -page_url $target_url
-    ## loop through the webparts that need to be copied, and only copy them if they are not already in the target page
+    ## loop through the webparts that need to be copied
     foreach ($webpart_src in $webparts_src) {
         $webpart_duplicated = $false  
-
+        
         foreach ($webpart_target in $webparts_on_target_url) {
+            #check if webpart is duplicated
             if ($webpart_src.WebPart.Title -eq $webpart_targe.WebPart.Title) { 
                 $webpart_duplicated = $true
             }
         }
+        #and only copy them if they are not already in the target page
         if (!$webpart_duplicated) {
-            $webpart_src_xml=Get-PnPWebPartXml -ServerRelativePageUrl $src_url -Identity $webpart_src.Id.Guid #|  Out-File -filepath $filename;
-            Add-PNPWebPartToWebPartPage -ServerRelativePageUrl $target_url -Xml $webpart_src_xml -ZoneId 'wpz' -ZoneIndex $(Get-Random -Maximum 100) ; 
-            Write-Host "OK: webpart '$($webpart_src.FieldValues.Title)' has been copied"            
+            $webpart_src_xml=Get-PnPWebPartXml -ServerRelativePageUrl $src_url -Identity $webpart_src.Id.Guid 
+            Add-PNPWebPartToWebPartPage -ServerRelativePageUrl $target_url -Xml $webpart_src_xml -ZoneId 'wpz' -ZoneIndex $(Get-Random -Maximum 10000)             
+            $webpart_target_xml=Get-PnPWebPartXml -ServerRelativePageUrl $target_url -Identity $webpart_src.WebPart.Title    
+            $webpart_target_id=$webpart_target_xml.Substring($webpart_target_xml.IndexOf("View Name=""{")+12)
+            $webpart_target_id = $webpart_target_id.Substring(0,$webpart_target_id.IndexOf("}"))
+            if ($src_item.FieldValues.PublishingPageContent){
+                #lets add the webpart code into the html area
+                $new_webpart_code = '<div class="ms-rtestate-read ms-rte-wpbox" contenteditable="false"> <div class="ms-rtestate-notify  ms-rtestate-read {0}" id="div_{0}" unselectable="on"></div><div id="vid_{0}" unselectable="on" style="display: none;"></div></div>' -f [string]$webpart_target_id;
+                $src_item.FieldValues.PublishingPageContent+=$new_webpart_code
+            }
+            Write-Host "OK: webpart '$($webpart_src.WebPart.Title)' has been copied"            
         }
         else {
-            Write-Host @("Webpart '", [string]$srcPageWebpartItem.WebPart.Title."' already exists in the target page." );
+            Write-Host @("Webpart '"+[string]$webpart_src.WebPart.Title+"' already exists in the target page." );
         }        
     }
+
+    
+    return $src_item
 }
  
-function setWebParts(){
+<# function setWebParts(){
      param (
-            $src_url,
             $target_url,
             $item,
-            $include_wp_columns
+            $webpart_assigned_columns
         )
-      $webparts_src= getWebParts -page_url $src_url
-      $webparts_target=getWebParts -page_url $target_url
-
-}
+      $webparts_src = getWebParts -page_url $item.FieldValues.FileRef #$src_url
+      $webparts_target = getWebParts -page_url $target_url
+      $webparts_target
+      return $item
+}#>
 
 function generateItemValues () {
     param(
@@ -77,7 +92,7 @@ function generateItemValues () {
     $fields | ForEach-Object {
         $field_name = $_ 
         # should not copy ID,it is unique
-        if ($field_name -notin 'ID', 'Id', 'FileLeafRef') {
+        if ($field_name -notin 'ID', 'Id', 'FileLeafRef','PublishingPageLayout') {
             ## in case there is any value to copy                
             if ($item.FieldValues[$field_name] ) {
                 if ( $item.FieldValues[$field_name].getType().BaseType.Name -like "*Lookup*" ) {      
@@ -104,4 +119,4 @@ function generateItemValues () {
 
     
 
-Export-ModuleMember -Function checkModules, getWebParts, copyWebParts, setWebParts
+Export-ModuleMember -Function checkModules, getWebParts, copyWebParts,generateItemValues # setWebParts, 
