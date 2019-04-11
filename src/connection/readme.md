@@ -2,7 +2,7 @@
 
 ## DESCRIPTION
 
-This script connects to a target sharepoint 2013 on premises and returns a PS object containing different infrmation from the site.
+This script connects to a target sharepoint 2013 ( have not tried of highfer version, but it should work) on premises and returns a PS object containing different infrmation from the site.
 
 ## PARAMETER
 
@@ -12,7 +12,7 @@ This script connects to a target sharepoint 2013 on premises and returns a PS ob
 
 ## RESULT
 
-Function returns ( if connection is succesful ) a object with the following properties:
+Function returns ( if connection is succesful ) an {object} with the following properties:
 
 - siteContext = connection site context object;
 - siteWeb = site URL
@@ -21,3 +21,7 @@ Function returns ( if connection is succesful ) a object with the following prop
 
 ## EXAMPLES
 $myConnectedSiteContext=connectToSite -srcSite 'http://[mySPonPremisesTenant].arrisi.com/'
+
+### FUTURE TODOs:
+
+- apply regex where needed
