@@ -2,8 +2,8 @@ Import-Module -Force $PSScriptRoot\..\resources\SP_tools.psm1;
 
 function getListItems() {
     param( 
-        [System.Collections.Hashtable] $site, ## need to provide the $site object returned by the SP_connection_manager
-        [System.Array]$fields,
+        [System.Collections.Hashtable] $site, ## provides the $site object returned by the SP_connection_manager ( site connection context )
+        [System.Array]$fields,  ## fields that want to be requested
         [string]$list_name,
         [System.Management.Automation.ScriptBlock]$filter      ## Filter example: {$_.FieldValues.Category -eq 'home'} 
     )
@@ -32,11 +32,9 @@ function getListItems() {
     }
     catch {
         Write-Host ("There has been an error trying to retrive the items from list '{1}'.`nError details: {0} " -f ($_.Exception.Message, $list_name))
-        #Throw ("Could not retrieve any item from site: [{0}] | list: [$srcListName]." -f $site.siteTitleFormated);
     }
    
 }
-
 function copyListsItems( ) {
     param( 
         [System.Collections.Hashtable] $item_collection, ## need to provide a collection object returned by getListItems
@@ -101,7 +99,6 @@ function copyListsItems( ) {
         Write-Host @("There has been an error trying to copy items to '{1}'.`nError details: {0}" -f ($_.Exception.Message), $site.siteTitleFormated);
     } 
 }
-
 function updateListsItem ( ) {
     param(
         [System.Collections.Hashtable] $site, ## need to provide the $site object returned by the SP_connection_manager
@@ -130,14 +127,12 @@ function updateListsItem ( ) {
     }
     return $updated_item
 }
-
 function copyPublishingItems( ) {
     param( 
         [System.Collections.Hashtable] $item_collection, ## need to provide a collection object returned by getListItems
         [System.Collections.Hashtable] $site, ## need to provide the $site object returned by the SP_connection_manager
-        #[System.Array]$fields, # if empty, use the fields provided in the item_collection
         [string]$list_name,
-        [array]$include_weparts ## enable copying the webparts on target columns that are going to be copied.
+        [array]$include_weparts ## enable copying the webparts on publishingPageContent  that are going to be copied.
     )
     try {
         if ($item_collection.total -le 0 ) {
@@ -155,8 +150,6 @@ function copyPublishingItems( ) {
         while ($copy_confirm -ne "y") {
             if ($copy_confirm -eq 'n') {
                 throw 'ABORT: byez...';
-                #Write-Host "ABORT: byez..."
-                #return $null # exit
             }
             $copy_confirm = Read-Host "Would you like to copy these ($($item_collection.total)) items to '$list_name', on site '$($site.siteTitleFormated)' ? (y/n)?";
         }
@@ -168,26 +161,24 @@ function copyPublishingItems( ) {
         # create the data structure that will be copied into the item        
         $item_collection.items | ForEach-Object {    
             $item = $_
+            # work out some foundational column info like page url, page layout...
             $page_layout = $item.FieldValues.PublishingPageLayout.Url.Substring($item.FieldValues.PublishingPageLayout.Url.LastIndexOfAny("/") + 1).replace(".aspx", "");
             $page_temp_name = $($item.FieldValues.FileLeafRef.Replace(".aspx", "") + "-" + $(Get-Random -Maximum 10000))
-            
+            # add the source publishing page on target library
             Add-PnPPublishingPage -Connection $site.siteContext -PageName $page_temp_name -OutVariable $test -ErrorAction Inquire -Title $item.Title -PageTemplateName $page_layout 
             $created_page = Get-PnPListItem -Connection $site.siteContext  -List $list_name -Query ("<View><Query><Where><Eq><FieldRef Name='Title'/><Value Type='Text'>" + $page_temp_name + "</Value></Eq></Where></Query></View>");
-  
-            #page was copied OK
+      
             if ($created_page) {
                 Write-Host "OK: Publising Page has been created: ID ($($created_page.Id)), Title: $($created_page.FieldValues.Title)"
                                                     
-                # if publishing pages should be copied with their webparts
+                # publishing pages webparts should be copied?
                 if ($include_weparts){
                     $item= copyWebparts -src_item $item -target_url $($created_page.FieldValues.FileRef)
                 }
-
                 #builds changes values arry in order to update newly create page with values from original page
-                $changes = generateItemValues -fields $fields -item $item   # $changes example : $changes=@{"ID" = 23}            
+                $changes = generateItemValues -fields $fields -item $item   # $changes example : $changes=@{"ID" = 23}   
 
                 $updated_page = updateListsItem -site $site -item $created_page -list_name $list_name -changes $changes
-
                 If ($updated_page) {
                     $items_copied_ok.items += @{"ok_id-$($item.Id)" = $item.FieldValues };
                     $items_copied_ok.total += 1;
@@ -199,7 +190,7 @@ function copyPublishingItems( ) {
                     Write-Host 'There has been a problem updating the copied item';
                 }
             }
-            #could not copy the page
+
             else {
                 throw 'There has been a problem creating the item';
             }
@@ -210,6 +201,5 @@ function copyPublishingItems( ) {
         Write-Host @("There has been an error trying to copy publishing pages to '{1}'.`nError details: {0}" -f ($_.Exception.Message), $site.siteTitleFormated);
     } 
 }
-
 
 Export-ModuleMember -Function getListItems, copyListsItems, updateListsItem, copyPublishingItems;

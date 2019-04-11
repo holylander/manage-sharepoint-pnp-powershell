@@ -1,5 +1,8 @@
 function checkModules () {
-    
+    if (!$(Get-InstalledModule -Name CredentialManager -ErrorAction SilentlyContinue)) {
+        Write-Host "Need to install powershell module CredentialManager";
+        Install-Module CredentialManager -Scope CurrentUser;
+    }
     if (!$(Get-InstalledModule -Name SharePointPnPPowerShell2013 -ErrorAction SilentlyContinue)) {
         Write-Host "Need to install PnP-powershell for SP2013";
         Install-Module SharePointPnPPowerShell2013 -Scope CurrentUser;
@@ -28,7 +31,6 @@ function getWebParts () {
     $page_webparts = Get-PnPWebPart -ServerRelativePageUrl $page_url
     return $page_webparts
 }
-
 function copyWebParts() {
     param (
         $target_url,
@@ -56,9 +58,10 @@ function copyWebParts() {
             $webpart_target_xml=Get-PnPWebPartXml -ServerRelativePageUrl $target_url -Identity $webpart_src.WebPart.Title    
             $webpart_target_id=$webpart_target_xml.Substring($webpart_target_xml.IndexOf("View Name=""{")+12)
             $webpart_target_id = $webpart_target_id.Substring(0,$webpart_target_id.IndexOf("}"))
+
             if ($src_item.FieldValues.PublishingPageContent){
                 #lets add the webpart code into the html area
-                $new_webpart_code = '<div class="ms-rtestate-read ms-rte-wpbox" contenteditable="false"> <div class="ms-rtestate-notify  ms-rtestate-read {0}" id="div_{0}" unselectable="on"></div><div id="vid_{0}" unselectable="on" style="display: none;"></div></div>' -f [string]$webpart_target_id;
+                $new_webpart_code = '<div class="ms-rtestate-read ms-rte-wpbox" contenteditable="false"> <div class="ms-rtestate-notify  ms-rtestate-read {0}" id="div_{0}" unselectable="on"></div><div id="vid_{0}" unselectable="on" style="display: none;"></div></div>' -f $($webpart_target_id.ToLower());
                 $src_item.FieldValues.PublishingPageContent+=$new_webpart_code
             }
             Write-Host "OK: webpart '$($webpart_src.WebPart.Title)' has been copied"            
@@ -71,19 +74,6 @@ function copyWebParts() {
     
     return $src_item
 }
- 
-<# function setWebParts(){
-     param (
-            $target_url,
-            $item,
-            $webpart_assigned_columns
-        )
-      $webparts_src = getWebParts -page_url $item.FieldValues.FileRef #$src_url
-      $webparts_target = getWebParts -page_url $target_url
-      $webparts_target
-      return $item
-}#>
-
 function generateItemValues () {
     param(
         [array]$fields,
@@ -116,7 +106,11 @@ function generateItemValues () {
     }
     return $item_values
 }
-
+function getListFields($site, $list_name) {
+    $temp = Get-PnPField -List $list_name -Connection $site.siteContext;
+    $temp = $temp | sort Title;
+    return $temp;
+}
     
 
-Export-ModuleMember -Function checkModules, getWebParts, copyWebParts,generateItemValues # setWebParts, 
+Export-ModuleMember -Function checkModules, getWebParts, copyWebParts, generateItemValues, getListFields
