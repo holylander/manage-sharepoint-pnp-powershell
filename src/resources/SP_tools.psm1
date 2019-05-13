@@ -137,5 +137,32 @@ function  addUser {
     }
 }
 
+function  removeUser {
+    param(
+        [System.Collections.Hashtable] $site, ## provides the $site object returned by the SP_connection_manager ( site connection context )
+        [string]$user  #username to be added
+    )
+    $site_groups = Get-PnPGroup -Connection $site.siteContext #-web $site1_connection.siteWeb
+    Write-Host "Avaiable groups:"
+    $site_groups
+    while (!$answer) {
+        $answer = Read-Host "Please choose the group from which you would like to remove this user ( use group ID)";
+        if ($answer -notin $site_groups.Id) {
+            Write-Host "Wrong Id, Please retry."
+            $answer = $false
+        }
+    }
+    try {
+        write-host "Trying to remove user..."
+        $target_group_name = $($site_groups | Where-Object Id -eq $answer).Title
 
-Export-ModuleMember -Function checkModules, getWebParts, copyWebParts, generateItemValues, getListFields,addUser
+        Remove-PnPUserFromGroup -LoginName $user -Identity $target_group_name -Connection $site.siteContext -ErrorAction Stop
+        return "User '$user' was removed to '$target_group_name' group."
+    }
+    catch {
+        return "ERROR: User '$user' could not be remove to '$target_group_name' group."
+    }
+}
+
+
+Export-ModuleMember -Function checkModules, getWebParts, copyWebParts, generateItemValues, getListFields,addUser,removeUser
