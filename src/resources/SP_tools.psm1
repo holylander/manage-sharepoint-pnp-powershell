@@ -105,6 +105,9 @@ function generateItemValues () {
     return $item_values
 }
 function getListFields($site, $list_name) {
+    if (!$list_name) {
+        $list_name = [String]$(Read-Host -Prompt 'Please type the sharepoint TARGET list name')
+    }
     $temp = Get-PnPField -List $list_name -Connection $site.siteContext;
     $temp = $temp | sort Title;
     return $temp;
