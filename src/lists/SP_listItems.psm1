@@ -78,7 +78,10 @@ function copyListsItems( ) {
             #try to save the item on target list
             $new_list_item = Add-PnPListItem -ErrorAction Inquire -Connection $site.siteContext -List $list_name -Values $item_values;           
             if ($new_list_item) {
-                Write-Host "OK: New item ($($new_list_item.Id)) was saved in to list: '$list_name', on site: '$($site.siteTitleFormated)'. Source item '$($item.FieldValues.GetEnumerator()  | Select-Object -first 1 key)': '$($item.FieldValues.GetEnumerator()  | Select-Object -first 1 value)'.";        
+                <# Write-Host "OK: New item ($($new_list_item.Id)) was saved in to list: '$list_name', on site: '$($site.siteTitleFormated)'. Source item '$($item.FieldValues.GetEnumerator()  | Select-Object -first 1 key)': '$($item.FieldValues.GetEnumerator()  | Select-Object -first 1 value)'.";        
+                 #>
+                 Write-Host "OK: New item ($($new_list_item.Id)) was saved in to list: '$list_name', on site: '$($site.siteTitleFormated)'. Source item ID: '$($item.FieldValues.ID)'.";        
+                
                 $items_copied_ok.items += @{"ok_id-$($new_list_item.Id)" = $item.FieldValues };
                 $items_copied_ok.total += 1;
             }

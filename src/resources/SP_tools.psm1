@@ -91,7 +91,7 @@ function generateItemValues () {
                     }
                     #this is another type of lookup column
                     else {                        
-                        $itemValues += @{"$field_name" = [string]$itemIterator.FieldValues[$field_name].LookupId };    
+                        $itemValues += @{"$field_name" = [string]$item.FieldValues[$field_name].LookupId };    
                     }                        
                 }
                 else {
