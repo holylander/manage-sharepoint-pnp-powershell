@@ -93,7 +93,7 @@ function generateItemValues () {
                     }                        
                 }
                 else {
-                    $item_values += @{"$_" = $item.FieldValues[$field_name] }
+                    $item_values += @{"$field_name" = $item.FieldValues[$field_name] }
                 }
             }
             ## otherwise, use some empty valye
