@@ -5,7 +5,7 @@ function checkModules () {
     }
     if (!$(Get-InstalledModule -Name SharePointPnPPowerShell2013 -ErrorAction SilentlyContinue)) {
         Write-Host "Need to install PnP-powershell for SP2013";
-        Install-Module SharePointPnPPowerShell2013 -Scope CurrentUser;
+        Install-Module SharePointPnPPowerShell2013 --AllowClobber -Scope CurrentUser;
     }
     if (!$(Get-InstalledModule -Name SharePointPnPPowerShell2016 -ErrorAction SilentlyContinue)) {
         Write-Host "Need to install PnP-powershell for SP2016";
