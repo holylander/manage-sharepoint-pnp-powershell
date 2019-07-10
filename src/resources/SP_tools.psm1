@@ -1,23 +1,25 @@
 function checkModules () {
     if (!$(Get-InstalledModule -Name CredentialManager -ErrorAction SilentlyContinue)) {
-        Write-Host "Need to install powershell module CredentialManager";
-        Install-Module CredentialManager -Scope CurrentUser;
+        Write-Host "Need to change the execution policy scope for the current user to unrestricted, in order to import modules."
+        Set-ExecutionPolicy -ExecutionPolicy Unrestricted -Scope CurrentUser
+        Write-Host "Need to install powershell module CredentialManager"
+        Install-Module CredentialManager -Scope CurrentUser
     }
     if (!$(Get-InstalledModule -Name SharePointPnPPowerShell2013 -ErrorAction SilentlyContinue)) {
-        Write-Host "Need to install PnP-powershell for SP2013";
-        Install-Module SharePointPnPPowerShell2013 --AllowClobber -Scope CurrentUser;
+        Write-Host "Need to install PnP-powershell for SP2013"
+        Install-Module SharePointPnPPowerShell2013 -AllowClobber -Scope CurrentUser
     }
     if (!$(Get-InstalledModule -Name SharePointPnPPowerShell2016 -ErrorAction SilentlyContinue)) {
-        Write-Host "Need to install PnP-powershell for SP2016";
-        Install-Module SharePointPnPPowerShell2016  -AllowClobber  -Scope CurrentUser;
+        Write-Host "Need to install PnP-powershell for SP2016"
+        Install-Module SharePointPnPPowerShell2016  -AllowClobber  -Scope CurrentUser
     }
     if (!$(Get-InstalledModule -Name SharePointPnPPowerShell2019 -ErrorAction SilentlyContinue)) {
-        Write-Host "Need to install PnP-powershell for SP2019";
-        Install-Module SharePointPnPPowerShell2019  -AllowClobber  -Scope CurrentUser;
+        Write-Host "Need to install PnP-powershell for SP2019"
+        Install-Module SharePointPnPPowerShell2019  -AllowClobber  -Scope CurrentUser
     }
     if (!$(Get-InstalledModule -Name SharePointPnPPowerShellOnline -ErrorAction SilentlyContinue)) {
-        Write-Host "Need to install PnP-powershell for SPOnline";
-        Install-Module SharePointPnPPowerShellOnline  -AllowClobber   -Scope CurrentUser;
+        Write-Host "Need to install PnP-powershell for SPOnline"
+        Install-Module SharePointPnPPowerShellOnline  -AllowClobber   -Scope CurrentUser
     }
 
 
@@ -60,12 +62,12 @@ function copyWebParts() {
             $webpart_target_id=$webpart_target_xml.Substring($webpart_target_xml.IndexOf("View Name=""{")+12)
             $webpart_target_id = $webpart_target_id.Substring(0,$webpart_target_id.IndexOf("}"))
 
-            $new_webpart_code += '<div class="ms-rtestate-read ms-rte-wpbox" contenteditable="false"> <div class="ms-rtestate-notify  ms-rtestate-read {0}" id="div_{0}" unselectable="on"></div><div id="vid_{0}" unselectable="on" style="display: none;"></div></div>' -f $($webpart_target_id.ToLower());
+            $new_webpart_code += '<div class="ms-rtestate-read ms-rte-wpbox" contenteditable="false"> <div class="ms-rtestate-notify  ms-rtestate-read {0}" id="div_{0}" unselectable="on"></div><div id="vid_{0}" unselectable="on" style="display: none"></div></div>' -f $($webpart_target_id.ToLower())
 
             Write-Host "OK: webpart '$($webpart_src.WebPart.Title)' has been copied"
         }
         else {
-            Write-Host @("Webpart '"+[string]$webpart_src.WebPart.Title+"' already exists in the target page." );
+            Write-Host @("Webpart '"+[string]$webpart_src.WebPart.Title+"' already exists in the target page." )
         }
     }
 
@@ -85,11 +87,11 @@ function generateItemValues () {
             if ($item.FieldValues[$field_name] ) {
                 if ( $item.FieldValues[$field_name].getType().BaseType.Name -like "*Lookup*" ) {
                     if ($field_name -in "Author", "Editor" ) {
-                        $item_values += @{"$field_name" = [string]$item.FieldValues[$field_name].LookupValue };
+                        $item_values += @{"$field_name" = [string]$item.FieldValues[$field_name].LookupValue }
                     }
                     #this is another type of lookup column
                     else {                        
-                        $itemValues += @{"$field_name" = [string]$item.FieldValues[$field_name].LookupId };    
+                        $itemValues += @{"$field_name" = [string]$item.FieldValues[$field_name].LookupId }    
                     }                        
                 }
                 else {
@@ -98,7 +100,7 @@ function generateItemValues () {
             }
             ## otherwise, use some empty valye
             else {
-                $item_values += @{"$field_name" = $null }; # ""
+                $item_values += @{"$field_name" = $null } # ""
             }
         }
     }
@@ -108,9 +110,9 @@ function getListFields($site, $list_name) {
     if (!$list_name) {
         $list_name = [String]$(Read-Host -Prompt 'Please type the sharepoint TARGET list name')
     }
-    $temp = Get-PnPField -List $list_name -Connection $site.siteContext;
-    $temp = $temp | sort Title;
-    return $temp;
+    $temp = Get-PnPField -List $list_name -Connection $site.siteContext
+    $temp = $temp | sort Title
+    return $temp
 }
 
 
@@ -123,7 +125,7 @@ function  addUser {
     Write-Host "Avaiable groups:"
     $site_groups
     while (!$answer) {
-        $answer = Read-Host "Please choose a group to which to you would like to add this user ( use group ID)";
+        $answer = Read-Host "Please choose a group to which to you would like to add this user ( use group ID)"
         if ($answer -notin $site_groups.Id) {
             Write-Host "Wrong Id, Please retry."
             $answer = $false
@@ -149,7 +151,7 @@ function  removeUser {
     Write-Host "Avaiable groups:"
     $site_groups
     while (!$answer) {
-        $answer = Read-Host "Please choose the group from which you would like to remove this user ( use group ID)";
+        $answer = Read-Host "Please choose the group from which you would like to remove this user ( use group ID)"
         if ($answer -notin $site_groups.Id) {
             Write-Host "Wrong Id, Please retry."
             $answer = $false
