@@ -11,15 +11,15 @@ function checkModules () {
     }
     if (!$(Get-InstalledModule -Name SharePointPnPPowerShell2016 -ErrorAction SilentlyContinue)) {
         Write-Host "Need to install PnP-powershell for SP2016"
-        Install-Module SharePointPnPPowerShell2016  -AllowClobber  -Scope CurrentUser
+        Install-Module SharePointPnPPowerShell2016 -AllowClobber -Scope CurrentUser
     }
     if (!$(Get-InstalledModule -Name SharePointPnPPowerShell2019 -ErrorAction SilentlyContinue)) {
         Write-Host "Need to install PnP-powershell for SP2019"
-        Install-Module SharePointPnPPowerShell2019  -AllowClobber  -Scope CurrentUser
+        Install-Module SharePointPnPPowerShell2019 -AllowClobber -Scope CurrentUser
     }
     if (!$(Get-InstalledModule -Name SharePointPnPPowerShellOnline -ErrorAction SilentlyContinue)) {
         Write-Host "Need to install PnP-powershell for SPOnline"
-        Install-Module SharePointPnPPowerShellOnline  -AllowClobber   -Scope CurrentUser
+        Install-Module SharePointPnPPowerShellOnline -AllowClobber -Scope CurrentUser
     }
 
 
@@ -115,7 +115,6 @@ function getListFields($site, $list_name) {
     return $temp
 }
 
-
 function  addUser {
     param(
         [System.Collections.Hashtable] $site, ## provides the $site object returned by the SP_connection_manager ( site connection context )
@@ -141,7 +140,6 @@ function  addUser {
         return "ERROR: User '$user' could not be added to '$target_group_name' group."
     }
 }
-
 function  removeUser {
     param(
         [System.Collections.Hashtable] $site, ## provides the $site object returned by the SP_connection_manager ( site connection context )
@@ -168,6 +166,5 @@ function  removeUser {
         return "ERROR: User '$user' could not be remove to '$target_group_name' group."
     }
 }
-
 
 Export-ModuleMember -Function checkModules, getWebParts, copyWebParts, generateItemValues, getListFields,addUser,removeUser
