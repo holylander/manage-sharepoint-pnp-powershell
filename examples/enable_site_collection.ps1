@@ -8,5 +8,6 @@ Write-Host $("`nMSG: script Started----`n");
 #checkModules;
 $source_site="";  ## feel free to to prefill this var with the target URL if needed.
 $site1_connection = connectToSite -srcSite $source_site -stored_credential spOnline;
-Add-PnPSiteCollectionAppCatalog  -Site $source_site
-Write-Host $("`n----MSG: script Ended: `n");
+Add-PnPSiteCollectionAppCatalog  -Site $($site1_connection.siteWeb.Url) -ErrorAction Stop
+Write-Host $("`nSite collection app catalog was enabled.`n")
+Write-Host $("`n----MSG: script Ended: `n")
