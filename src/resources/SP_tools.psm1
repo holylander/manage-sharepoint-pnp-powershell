@@ -1,7 +1,7 @@
 function checkModules () {
     if (!$(Get-InstalledModule -Name CredentialManager -ErrorAction SilentlyContinue)) {
         Write-Host "Need to change the execution policy scope for the current user to unrestricted, in order to import modules."
-        Set-ExecutionPolicy -ExecutionPolicy Unrestricted -Scope CurrentUser
+        Set-ExecutionPolicy -ExecutionPolicy Unrestricted -Scope CurrentUser -ErrorAction SilentlyContinue
         Write-Host "Need to install powershell module CredentialManager"
         Install-Module CredentialManager -Scope CurrentUser
     }

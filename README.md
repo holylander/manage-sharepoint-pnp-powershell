@@ -14,3 +14,4 @@ You can start checking out the [examples folder](examples), and learn how to use
 - You will need to have installed the Sharepoint PnP-powershell module.
 - You will need to have installed the credential manager module
   - Run ```Install-Module -Name CredentialManager```
+  - Create your stored credentials in the Windows credentials manager. Please NOTE that it must be a "generic credential", not a "Windows credential"
