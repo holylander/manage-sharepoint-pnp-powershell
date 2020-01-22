@@ -20,7 +20,7 @@ Function returns ( if connection is succesful ) an {object} with the following p
 - siteTitleFormated = Site title withtout spaces.
 
 ## EXAMPLES
-$myConnectedSiteContext=connectToSite -srcSite 'http://[mySPonPremisesTenant].arrisi.com/'
+$myConnectedSiteContext=connectToSite -srcSite 'http://[mySPonPremisesTenant].[mydomain].com/'
 
 ### FUTURE TODOs:
 
